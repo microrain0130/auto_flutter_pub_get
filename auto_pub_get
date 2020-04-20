@@ -1,0 +1,44 @@
+#! /usr/bin/env bash
+#set -x
+set -e
+
+# 自动检索目标目录下的pubspec.yaml文件，并自动拉取依赖
+# 解决手动拉取依赖的繁琐和失误，适用于flutter plugins及flutter  framework等大型项目
+# 建议移动到 /usr/local/bin 目标下
+# 使用示例:
+#    auto_pub_get ~/Documents/flutter-stable
+# 也可以直接执行，默认会在当前目录下开始检索
+#   auto_pub_get
+
+pub_update() {
+    cd $1
+    if [ -d "$1" ]; then
+        for file in `ls $1`; do
+           if [ -d $file ]; then
+               cd $file;
+                pubspec="$(pwd)/pubspec.yaml"
+               if [ -e "$pubspec" ]; then
+                    echo "getting $(pwd)"
+                    flutter pub get
+               else
+                    pub_update "$(pwd)"
+                fi
+            cd ..
+        fi
+        done
+    else
+        echo "$1 不是文件夹"
+    fi
+}
+
+target_path=./
+if [ $# -gt 0 ];then
+    target_path=$1
+fi
+
+echo -e "\033[34mTarget path is $target_path\033[0m"
+
+pub_update $target_path
+
+echo -e "\033[34m flutter pub get finished\033[0m"
+
