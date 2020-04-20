@@ -10,15 +10,17 @@ set -e
 # 也可以直接执行，默认会在当前目录下开始检索
 #   auto_pub_get
 
+exe_count=0
+
 pub_update() {
     cd $1
     if [ -d "$1" ]; then
         for file in `ls $1`; do
-           if [ -d $file ]; then
+           if [ -d $file ] && [ "$file" != "cache" ]; then
                cd $file;
                 pubspec="$(pwd)/pubspec.yaml"
                if [ -e "$pubspec" ]; then
-                    echo "getting $(pwd)"
+                   exe_count=$(($exe_count + 1))
                     flutter pub get
                else
                     pub_update "$(pwd)"
@@ -40,5 +42,9 @@ echo -e "\033[34mTarget path is $target_path\033[0m"
 
 pub_update $target_path
 
-echo -e "\033[34m flutter pub get finished\033[0m"
+if [ $exe_count == 0 ]; then
+    echo "No pubspec.yaml exists"
+else
+    echo -e "\033[34m flutter pub get finished\033[0m"
+fi
 
